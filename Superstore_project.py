@@ -1,8 +1,13 @@
+#importing all the libraries 
+
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import os
+
+#Extracting the Data
+
 df=pd.read_excel("Superstore.xlsx")
 
 st.set_page_config(page_title="Sales Dashboard", layout="wide")
@@ -13,11 +18,11 @@ uploaded_file = st.file_uploader("Upload Superstore XLSX File", type=["xlsx"])
 if uploaded_file is not None:
     df = pd.read_excel(uploaded_file)
 
-    # 🧽 2. Data Cleaning
-    # - Convert 'Order Date' column to datetime
-    # - Remove duplicates
-    # - Handle missing values (drop or fill)
-    # - Clean column formatting (trim spaces, lowercase headers)
+    #  2. Data Cleaning
+    # - Converting 'Order Date' column to datetime
+    # - Removing duplicates
+    # - Handling missing values to (drop or fill)
+    # - Cleaning column formatting (trim spaces, lowercase headers)
     
     df['Order Date'] = pd.to_datetime(df['Order Date'],errors='coerce')
     df.dropna(subset=['Order Date'],inplace=True)
@@ -25,15 +30,17 @@ if uploaded_file is not None:
     df.fillna(0,inplace=True)
     df.columns = [col.strip().lower().replace(' ','_')for col in df.columns]
     
-    #Create month and quarter columns
+    #Creating month and quarter columns
     df['month']=df['order_date'].dt.to_period('M')
     df['quarter']=df['order_date'].dt.to_period('Q')
 
     df
 
-    #  Q1. What are the total sales every month or quarter?
-    # - ✅ Use: groupby + sum() on Month/Quarter
-    # - ✅ Visual: *Line Plot*
+    #Now Analysing the data
+
+    #  1. Total sales every month or quarter?
+    # - Using : groupby + sum() on Month/Quarter
+    # - Visual : *Line Plot*
     
     #Setting style
     sns.set_theme(style="whitegrid")
@@ -48,9 +55,9 @@ if uploaded_file is not None:
     st.pyplot(plt.gcf())
 
     
-    # Q2. Which 10 products brought the most revenue?
-    # - ✅ Use: groupby('Product') + sort by 'Sales'
-    # - ✅ Visual: *Bar Chart*
+    # 2. Which 10 products brought the most revenue?
+    # - Using : groupby('Product') + sort by 'Sales'
+    # - Visual : *Bar Graph*
     
     top_products =  df.groupby('product_name')['sales'].sum().sort_values(ascending=False).head(10)
     top_products.plot(kind='bar',color='skyblue',figsize=(10,5),title="Top 10 Products by Revenue")
@@ -59,9 +66,9 @@ if uploaded_file is not None:
     st.pyplot(plt.gcf())
 
     
-    # Q3. Which region generated the highest sales and profit?
-    # - ✅ Use: groupby('Region')
-    # - ✅ Visual: *Bar Graph / Pie Chart*
+    # 3. Which region generated the highest sales and profit?
+    # - Using : groupby('Region')
+    # - Visual : *Bar Graph*
     
     region_data = df.groupby('region')[['sales','profit']].sum().sort_values(by='sales',ascending=False)
     region_data.plot(kind='bar',figsize=(8,5),title="Sales & Profit by Region")
@@ -72,9 +79,9 @@ if uploaded_file is not None:
     st.pyplot(plt.gcf())
 
     
-    # Q4. Which product category is underperforming in any region?
-    # - ✅ Use: pivot_table(Category vs Region)
-    # - ✅ Visual: *Heatmap*
+    # 4. Which product category is underperforming in any region?
+    # - Using : pivot_table(Category vs Region)
+    # - Visual : *Heatmap*
     
     pivot = pd.pivot_table(df,values='profit',index='category',columns='region',aggfunc='sum')
     plt.figure(figsize=(8,5))
@@ -85,9 +92,9 @@ if uploaded_file is not None:
     st.pyplot(plt.gcf())
 
     
-    # Q5. What is the relationship between sales and profit?
-    # - ✅ Use: scatter plot
-    # - ✅ Visual: Seaborn.scatterplot()
+    # 5. Finding the relationship between sales and profit.
+    # - Using : Seaborn.scatterplot()
+    # - Visual : *Scatter Plot*
     
     plt.figure(figsize=(8,5))
     sns.scatterplot(data=df,x='sales',y='profit',hue='category',alpha=0.7)
@@ -97,9 +104,9 @@ if uploaded_file is not None:
     st.pyplot(plt.gcf())
 
     
-    # Q6. How many orders were made per month?
-    # - ✅ Use: value_counts() or groupby('Order Date')
-    # - ✅ Visual: *Bar/Line Chart*
+    # 6. How many orders were made per month?
+    # - Using : value_counts() or groupby('Order Date')
+    # - Visual : *Bar Graph*
     
     monthly_orders=df['month'].value_counts().sort_index()
     monthly_orders.plot(kind='bar',figsize=(10,5),title="Orders per Month")
@@ -110,9 +117,9 @@ if uploaded_file is not None:
     st.pyplot(plt.gcf())
 
     
-    # #### 🟡 Q7. Which city or state has maximum orders with low profit?
-    # - ✅ Use: groupby('City') and compare Sales vs Profit
-    # - ✅ Visual: *Bar or Lollipop Chart*
+    # 7. Which city or state has maximum orders with low profit?
+    # - Using : groupby('City') and compairing Sales vs Profit
+    # - Visual: *Bar Graph*
     
     city_data = df.groupby('city')[['sales','profit']].sum()
     low_profit_cities=city_data[city_data['profit']<1000].sort_values(by='sales',ascending=False).head(10)
@@ -123,9 +130,9 @@ if uploaded_file is not None:
     st.pyplot(plt.gcf())
 
     
-    # #### 🟡 Q8. Which customer segment or shipping mode is most used?
-    # - ✅ Use: groupby('Segment') or groupby('Ship Mode')
-    # - ✅ Visual: *Pie Chart or Countplot*
+    # 8. Which customer segment or shipping mode is most used?
+    # - Using : groupby('Segment') or groupby('Ship Mode')
+    # - Visual: *Sub plot*
     
     fig,axes=plt.subplots(1,2,figsize=(12,5))
     sns.countplot(data=df,x='segment',ax=axes[0])
